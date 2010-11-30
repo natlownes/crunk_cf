@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+require 'optparse'
+require File.dirname(__FILE__) + '/../lib/crunk_cf.rb'
+
+  banner =  %{
+    USAGE: crunk_cf --action run --version version_name --base-dir base_directory
+
+    EXAMPLE:  crunk_cf --action run --version 1 --base-dir /etc
+              would find files named like:  /etc/apache2/httpd.conf.1.crunk_cf
+              and copy them to:             /etc/apache2/httpd.conf 
+              and, if that file exists, backup the original to something like:  /etc/apache2/httpd.conf.backup-789321321.crunk_cf
+  }
+
+options = {}
+optparse = OptionParser.new do |opts|
+  opts.banner = banner
+  opts.on('--action [ACTION]', String, 'Action to run.') do |o|
+    options[:action] = o
+  end
+  opts.on('--version [VERSION]', String, 'Target version:  the crunk_cf file version you want to use.') do |o|
+    options[:version] = o
+  end
+  opts.on('--base-dir [DIRECTORY]', String, 'Directory in which crunk_cf will root around to find configuration files to copy') do |o|
+    options[:base_directory] = o
+  end
+  opts.on('--named-run-id [NAME]', String, 'If, when replacing existing configuration files, you want to give them a custom crunk_cf run-id.  The run-id would be "dogface" in a filename like this:  httpd.conf.dogface.crunk_cf.  If this isn\'t set it\'s generated automatically.') do |o|
+    options[:named_run_id] = o
+  end
+
+  opts.on('-h', '--help', 'Help!') do
+    puts opts
+    exit
+  end
+end
+
+if ARGV.empty?
+  exit
+end
+
+optparse.parse!
+
+action          = options[:action]
+version         = options[:version] 
+base_directory  = options[:base_directory]
+named_run_id    = options[:named_run_id] 
+Crunk::CF.run!(action, version, base_directory, named_run_id)
+
